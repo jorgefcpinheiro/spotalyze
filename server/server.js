@@ -1,10 +1,143 @@
-const express = require('express')
-const app = express()
+const SpotifyWebApi = require("spotify-web-api-node");
+const express = require("express");
+const fs = require("fs");
 
-app.get('/api', (req, res) => {
-    res.json({users: ["user1", "user2", "user3"]})
-})
+const scopes = [
+  "ugc-image-upload",
+  "user-read-playback-state",
+  "user-modify-playback-state",
+  "user-read-currently-playing",
+  "streaming",
+  "app-remote-control",
+  "user-read-email",
+  "user-read-private",
+  "playlist-read-collaborative",
+  "playlist-modify-public",
+  "playlist-read-private",
+  "playlist-modify-private",
+  "user-library-modify",
+  "user-library-read",
+  "user-top-read",
+  "user-read-playback-position",
+  "user-read-recently-played",
+  "user-follow-read",
+  "user-follow-modify",
+];
 
-app.listen(5000, () => {
-    console.log("Server is running on port 5000")
-})
+const spotifyApi = new SpotifyWebApi({
+  redirectUri: "http://localhost:8888/callback",
+  clientId: "a0e681e8cc1747bd9f4e0c852e7137f1",
+  clientSecret: "6847534588e446afa3d2ec8f49da8fa9",
+});
+
+const app = express();
+
+app.get("/login", (req, res) => {
+  res.redirect(spotifyApi.createAuthorizeURL(scopes));
+});
+
+app.get("/callback", async (req, res) => {
+  const error = req.query.error;
+  const code = req.query.code;
+  const state = req.query.state;
+
+  if (error) {
+    console.error("Callback Error:", error);
+    res.send(`Callback Error: ${error}`);
+    return;
+  }
+
+  try {
+    const data = await spotifyApi.authorizationCodeGrant(code);
+    const access_token = data.body["access_token"];
+    const refresh_token = data.body["refresh_token"];
+    const expires_in = data.body["expires_in"];
+
+    spotifyApi.setAccessToken(access_token);
+    spotifyApi.setRefreshToken(refresh_token);
+
+    console.log("access_token:", access_token);
+    console.log("refresh_token:", refresh_token);
+
+    console.log(
+      `Successfully retrieved access token. Expires in ${expires_in} s.`
+    );
+    res.send("Success! You can now close the window.");
+
+    const me = await spotifyApi.getMe();
+    console.log(me.body);
+
+    setInterval(async () => {
+      const data = await spotifyApi.refreshAccessToken();
+      const access_token = data.body["access_token"];
+
+      console.log("The access token has been refreshed!");
+      console.log("access_token:", access_token);
+      spotifyApi.setAccessToken(access_token);
+    }, (expires_in / 2) * 1000);
+  } catch (error) {
+    console.error("Error getting Tokens:", error);
+    res.send(`Error getting Tokens: ${error}`);
+  }
+});
+
+app.get("/playlists", async (req, res) => {
+    try {
+      const me = await spotifyApi.getMe();
+      const playlists = await spotifyApi.getUserPlaylists(me.body.id);
+      const playlistsNames = playlists.body.items.map((playlist) => playlist.name);
+      res.json(playlistsNames);
+    } catch (error) {
+      console.error("Error getting user's playlists:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  app.get("/tracks", async (req, res) => {
+    try {
+      const options = {
+        time_range: "short_term", // Can be "short_term", "medium_term", or "long_term"
+        limit: 10,
+      };
+      const topTracks = await spotifyApi.getMyTopTracks(options);
+      const topTracksNames = topTracks.body.items.map((track) => track.name);
+      res.json(topTracksNames);
+    } catch (error) {
+      console.error("Error getting top tracks:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  app.get("/disconnect", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error disconnecting user:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+      } else {
+        res.redirect("/");
+      }
+    });
+  });
+
+  //method to get the user's top artists
+    app.get("/artists", async (req, res) => {
+        try {
+            const options = {
+                time_range: "short_term", // Can be "short_term", "medium_term", or "long_term"
+                limit: 10,
+            };
+            const topArtists = await spotifyApi.getMyTopArtists(options);
+            const topArtistsNames = topArtists.body.items.map((artist) => artist.name);
+            res.json(topArtistsNames);
+        } catch (error) {
+            console.error("Error getting top artists:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    });
+    
+
+app.listen(8888, () =>
+  console.log(
+    "HTTP Server up. Now go to http://localhost:8888/login in your browser."
+  )
+);
