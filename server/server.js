@@ -1,5 +1,6 @@
 const SpotifyWebApi = require("spotify-web-api-node");
 const express = require("express");
+require("dotenv").config();
 const fs = require("fs");
 
 const scopes = [
@@ -26,8 +27,8 @@ const scopes = [
 
 const spotifyApi = new SpotifyWebApi({
   redirectUri: "http://localhost:8888/callback",
-  clientId: "a0e681e8cc1747bd9f4e0c852e7137f1",
-  clientSecret: "6847534588e446afa3d2ec8f49da8fa9",
+  clientId: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET,
 });
 
 const app = express();
@@ -82,59 +83,59 @@ app.get("/callback", async (req, res) => {
 });
 
 app.get("/playlists", async (req, res) => {
-    try {
-      const me = await spotifyApi.getMe();
-      const playlists = await spotifyApi.getUserPlaylists(me.body.id);
-      const playlistsNames = playlists.body.items.map((playlist) => playlist.name);
-      res.json(playlistsNames);
-    } catch (error) {
-      console.error("Error getting user's playlists:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  });
+  try {
+    const me = await spotifyApi.getMe();
+    const playlists = await spotifyApi.getUserPlaylists(me.body.id);
+    const playlistsNames = playlists.body.items.map(
+      (playlist) => playlist.name
+    );
+    res.json(playlistsNames);
+  } catch (error) {
+    console.error("Error getting user's playlists:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
-  app.get("/tracks", async (req, res) => {
-    try {
-      const options = {
-        time_range: "short_term", // Can be "short_term", "medium_term", or "long_term"
-        limit: 10,
-      };
-      const topTracks = await spotifyApi.getMyTopTracks(options);
-      const topTracksNames = topTracks.body.items.map((track) => track.name);
-      res.json(topTracksNames);
-    } catch (error) {
-      console.error("Error getting top tracks:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  });
+app.get("/tracks", async (req, res) => {
+  try {
+    const options = {
+      time_range: "short_term", // Can be "short_term", "medium_term", or "long_term"
+      limit: 10,
+    };
+    const topTracks = await spotifyApi.getMyTopTracks(options);
+    const topTracksNames = topTracks.body.items.map((track) => track.name);
+    res.json(topTracksNames);
+  } catch (error) {
+    console.error("Error getting top tracks:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
-  app.get("/disconnect", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error("Error disconnecting user:", err);
+app.get("/disconnect", (req, res) => {
+    try {
+        spotifyApi.resetAccessToken();
+        spotifyApi.resetRefreshToken();
+        res.json({ message: "Successfully disconnected" });
+      } catch (error) {
+        console.error("Could not disconnect:", error);
         res.status(500).json({ error: "Internal Server Error" });
-      } else {
-        res.redirect("/");
       }
-    });
-  });
+});
 
-  //method to get the user's top artists
-    app.get("/artists", async (req, res) => {
-        try {
-            const options = {
-                time_range: "short_term", // Can be "short_term", "medium_term", or "long_term"
-                limit: 10,
-            };
-            const topArtists = await spotifyApi.getMyTopArtists(options);
-            const topArtistsNames = topArtists.body.items.map((artist) => artist.name);
-            res.json(topArtistsNames);
-        } catch (error) {
-            console.error("Error getting top artists:", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        }
-    });
-    
+app.get("/artists", async (req, res) => {
+  try {
+    const options = {
+      time_range: "short_term", // Can be "short_term", "medium_term", or "long_term"
+      limit: 10,
+    };
+    const topArtists = await spotifyApi.getMyTopArtists(options);
+    const topArtistsNames = topArtists.body.items.map((artist) => artist.name);
+    res.json(topArtistsNames);
+  } catch (error) {
+    console.error("Error getting top artists:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 app.listen(8888, () =>
   console.log(
