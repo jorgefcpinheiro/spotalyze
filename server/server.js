@@ -96,47 +96,6 @@ app.get("/playlists", async (req, res) => {
   }
 });
 
-app.get("/tracks", async (req, res) => {
-  try {
-    const options = {
-      time_range: "short_term", // Can be "short_term", "medium_term", or "long_term"
-      limit: 10,
-    };
-    const topTracks = await spotifyApi.getMyTopTracks(options);
-    const topTracksNames = topTracks.body.items.map((track) => track.name);
-    res.json(topTracksNames);
-  } catch (error) {
-    console.error("Error getting top tracks:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-app.get("/disconnect", (req, res) => {
-    try {
-        spotifyApi.resetAccessToken();
-        spotifyApi.resetRefreshToken();
-        res.json({ message: "Successfully disconnected" });
-      } catch (error) {
-        console.error("Could not disconnect:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-      }
-});
-
-app.get("/artists", async (req, res) => {
-  try {
-    const options = {
-      time_range: "short_term", // Can be "short_term", "medium_term", or "long_term"
-      limit: 10,
-    };
-    const topArtists = await spotifyApi.getMyTopArtists(options);
-    const topArtistsNames = topArtists.body.items.map((artist) => artist.name);
-    res.json(topArtistsNames);
-  } catch (error) {
-    console.error("Error getting top artists:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 app.listen(8888, () =>
   console.log(
     "HTTP Server up. Now go to http://localhost:8888/login in your browser."
