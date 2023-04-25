@@ -1,29 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
 
-function App() {
-  const [backendData, setBackendData] = useState([{}]);
+const App = () => {
+  const [playlists, setPlaylists] = useState([]);
 
   useEffect(() => {
-    fetch("/api")
-      .then((response) => response.json)
-      .then((data) => {
-        setBackendData(data);
-      });
+    const fetchPlaylists = async () => {
+      const response = await fetch('/playlists');
+      const data = await response.json();
+      setPlaylists(data);
+    };
+    fetchPlaylists();
   }, []);
 
   return (
     <div>
-      
-      {(typeof backendData.users === 'undefined') ? (
-        <p>Loading...</p>
-      ):(
-        backendData.users.map((user, i) => (
-          <p key={i}>{user}</p>
-        ))
+      <h1>Spotify Playlists</h1>
+      {playlists.length === 0 ? (
+        <p>Loading playlists...</p>
+      ) : (
+        <ul>
+          {playlists.map(playlist => (
+            <li key={playlist}>{playlist}</li>
+          ))}
+        </ul>
       )}
-
     </div>
-  )
-}
+  );
+};
 
 export default App;
