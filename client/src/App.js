@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(null);
   const [playlists, setPlaylists] = useState([]);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     async function checkToken() {
@@ -34,6 +35,17 @@ const App = () => {
     fetchPlaylists();
   }, []);
 
+  //use effect to get the profile of the user
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const response = await fetch("/profile");
+      const data = await response.json();
+      setProfile(data);
+    };
+    fetchProfile();
+  }, []);
+
+
   const handleLogin = (e) => {
     e.preventDefault();
     const popup = window.open("http://localhost:8888/login", "", "width=600,height=600");
@@ -59,6 +71,12 @@ const App = () => {
   return (
     <div>
       <h1>Spotalyze</h1>
+      {profile && (
+        <div>
+          <h2>Logged in as {profile.display_name}</h2>
+          <img src={profile.images[0].url} alt="avatar" />
+        </div>
+      )}
       {!loggedIn ? (
         <a href="#" onClick={handleLogin}>
           Login to Spotify
@@ -68,14 +86,6 @@ const App = () => {
           Logout
         </a>
       )}
-      <p>
-        Access token:{" "}
-        {loggedIn ? (
-          <span style={{ color: "green" }}>Set</span>
-        ) : (
-          <span style={{ color: "red" }}>Not Set</span>
-        )}
-      </p>
       {loggedIn && playlists.length > 0 && (
         <ul>
           {playlists.map((playlist) => (
