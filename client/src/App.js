@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 const App = () => {
-  const [token, setToken] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(null);
   const [playlists, setPlaylists] = useState([]);
 
   useEffect(() => {
@@ -13,10 +13,9 @@ const App = () => {
         }
         const data = await response.json();
         if (data) {
-          setToken(true);
-          console.log(data)
+          setLoggedIn(true);
         } else {
-          setToken(null);
+          setLoggedIn(false);
           throw new Error('Access token not found');
         }
       } catch (error) {
@@ -38,15 +37,20 @@ const App = () => {
   return (
     <div>
       <h1>Spotalyze</h1>
+      {!loggedIn ? (
+        <a href="http://localhost:8888/login">Login to Spotify</a>
+      ) : (
+        <a href="/logout">Logout</a>
+      )}
       <p>
         Access token:{" "}
-        {token ? (
+        {loggedIn ? (
           <span style={{ color: "green" }}>Set</span>
         ) : (
           <span style={{ color: "red" }}>Not Set</span>
         )}
       </p>
-      {token && playlists.length > 0 && (
+      {loggedIn && playlists.length > 0 && (
         <ul>
           {playlists.map((playlist) => (
             <li key={playlist}>{playlist}</li>
