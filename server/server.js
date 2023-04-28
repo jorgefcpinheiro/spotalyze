@@ -82,6 +82,7 @@ app.get("/callback", async (req, res) => {
   }
 });
 
+//get the playlists owned by the user
 app.get("/playlists", async (req, res) => {
   try {
     const me = await spotifyApi.getMe();
@@ -92,6 +93,21 @@ app.get("/playlists", async (req, res) => {
     res.json(playlistsNames);
   } catch (error) {
     console.error("Error getting user's playlists:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+//get the x (5 in the example) top tracks in y (medium in the example) term
+app.get("/tracks", async (req, res) => {
+  try {
+    const topTracks = await spotifyApi.getMyTopTracks({
+      limit: 5,
+      time_range: "medium_term",
+    });
+    const topTracksNames = topTracks.body.items.map((track) => track.name);
+    res.json(topTracksNames);
+  } catch (error) {
+    console.error("Error getting user's top tracks:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
