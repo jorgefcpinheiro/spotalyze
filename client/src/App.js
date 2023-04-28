@@ -40,7 +40,7 @@ const App = () => {
       {!loggedIn ? (
         <a href="http://localhost:8888/login">Login to Spotify</a>
       ) : (
-        <a href="/logout">Logout</a>
+        <a href="http://localhost:8888/logout">Logout</a>
       )}
       <p>
         Access token:{" "}
