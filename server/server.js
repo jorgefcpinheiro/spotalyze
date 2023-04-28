@@ -124,6 +124,18 @@ app.get("/tracks", async (req, res) => {
   }
 });
 
+//cleans the access token and refresh token
+app.get("/logout", async (req, res) => {
+  try {
+    spotifyApi.resetAccessToken();
+    spotifyApi.resetRefreshToken();
+    res.send("Sucess! You can now close the window.");
+  } catch (error) {
+    console.error("Error deleting the tokens!", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.listen(8888, () =>
   console.log(
     "HTTP Server up. Now go to http://localhost:8888/login in your browser."
