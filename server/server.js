@@ -136,6 +136,17 @@ app.get("/logout", async (req, res) => {
   }
 });
 
+//get the users profile
+app.get("/profile", async (req, res) => {
+  try {
+    const me = await spotifyApi.getMe();
+    res.json(me.body);
+  } catch (error) {
+    console.error("Error getting user's profile:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.listen(8888, () =>
   console.log(
     "HTTP Server up. Now go to http://localhost:8888/login in your browser."
