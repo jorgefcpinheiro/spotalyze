@@ -63,7 +63,7 @@ app.get("/callback", async (req, res) => {
     console.log(
       `Successfully retrieved access token. Expires in ${expires_in} s.`
     );
-    res.send("Success! You can now close the window.");
+    res.send("Sucess! You can now close the window.");
 
     const me = await spotifyApi.getMe();
     console.log(me.body);
@@ -79,6 +79,18 @@ app.get("/callback", async (req, res) => {
   } catch (error) {
     console.error("Error getting Tokens:", error);
     res.send(`Error getting Tokens: ${error}`);
+  }
+});
+
+//display the token of the user
+app.get("/token", async (req, res) => {
+  try {
+    const data = await spotifyApi.refreshAccessToken();
+    const access_token = data.body["access_token"];
+    res.json({ access_token: access_token });
+  } catch (error) {
+    console.error("Error getting Tokens:", error);
+    res.status(500).json({error: "Internal Server Error"})
   }
 });
 
