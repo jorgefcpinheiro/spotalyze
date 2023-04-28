@@ -34,13 +34,39 @@ const App = () => {
     fetchPlaylists();
   }, []);
 
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const popup = window.open("http://localhost:8888/login", "", "width=600,height=600");
+    const interval = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(interval);
+        window.location.reload();
+      }
+    }, 1000);
+  };
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    const popup = window.open("http://localhost:8888/logout", "", "width=600,height=600");
+    const interval = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(interval);
+        window.location.reload();
+      }
+    }, 1000);
+  };
+
   return (
     <div>
       <h1>Spotalyze</h1>
       {!loggedIn ? (
-        <a href="http://localhost:8888/login">Login to Spotify</a>
+        <a href="#" onClick={handleLogin}>
+          Login to Spotify
+        </a>
       ) : (
-        <a href="http://localhost:8888/logout">Logout</a>
+        <a href="#" onClick={handleLogout}>
+          Logout
+        </a>
       )}
       <p>
         Access token:{" "}
@@ -60,6 +86,5 @@ const App = () => {
     </div>
   );
 };
-
 
 export default App;
