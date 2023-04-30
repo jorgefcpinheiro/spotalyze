@@ -3,21 +3,23 @@ import React, { useState, useEffect } from "react";
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(null);
   const [playlists, setPlaylists] = useState([]);
+  const [tracks, setTracks] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(null);
 
   useEffect(() => {
     async function checkToken() {
       try {
-        const response = await fetch('/token');
+        const response = await fetch("/token");
         if (!response.ok) {
-          throw new Error('Failed to fetch access token');
+          throw new Error("Failed to fetch access token");
         }
         const data = await response.json();
         if (data) {
           setLoggedIn(true);
         } else {
           setLoggedIn(false);
-          throw new Error('Access token not found');
+          throw new Error("Access token not found");
         }
       } catch (error) {
         console.error(error);
@@ -32,10 +34,18 @@ const App = () => {
       const data = await response.json();
       setPlaylists(data);
     };
-    fetchPlaylists();
-  }, []);
+    const fetchTracks = async () => {
+      const response = await fetch("/tracks");
+      const data = await response.json();
+      setTracks(data);
+    };
+    if (selectedOption === "playlists") {
+      fetchPlaylists();
+    } else if (selectedOption === "tracks") {
+      fetchTracks();
+    }
+  }, [selectedOption]);
 
-  //use effect to get the profile of the user
   useEffect(() => {
     const fetchProfile = async () => {
       const response = await fetch("/profile");
@@ -45,10 +55,13 @@ const App = () => {
     fetchProfile();
   }, []);
 
-
   const handleLogin = (e) => {
     e.preventDefault();
-    const popup = window.open("http://localhost:8888/login", "", "width=600,height=600");
+    const popup = window.open(
+      "http://localhost:8888/login",
+      "",
+      "width=600,height=600"
+    );
     const interval = setInterval(() => {
       if (popup.closed) {
         clearInterval(interval);
@@ -59,7 +72,11 @@ const App = () => {
 
   const handleLogout = (e) => {
     e.preventDefault();
-    const popup = window.open("http://localhost:8888/logout", "", "width=600,height=600");
+    const popup = window.open(
+      "http://localhost:8888/logout",
+      "",
+      "width=600,height=600"
+    );
     const interval = setInterval(() => {
       if (popup.closed) {
         clearInterval(interval);
@@ -68,32 +85,103 @@ const App = () => {
     }, 1000);
   };
 
+  const handleOptionSelect = (option) => {
+    setSelectedOption(option);
+  };
+
   return (
-    <div>
-      <h1>Spotalyze</h1>
-      {profile && (
+    <>
+      <nav>
+        <ul>
+          <li>
+            <a href="/">Home</a>
+          </li>
+          {loggedIn && (
+            <>
+              <li>
+                <button onClick={() => handleOptionSelect("playlists")}>
+                  Playlists
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleOptionSelect("tracks")}>
+                  Tracks
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleOptionSelect("profile")}>
+                  Profile
+                </button>
+              </li>
+              <li>
+                <button onClick={handleLogout}>Logout</button>
+              </li>
+            </>
+          )}
+          {!loggedIn && (
+            <li>
+              <button onClick={handleLogin}>Login</button>
+            </li>
+          )}
+        </ul>
+      </nav>
+      {selectedOption === "playlists" && (
         <div>
-          <h2>Logged in as {profile.display_name}</h2>
-          <img src={profile.images[0].url} alt="avatar" />
+          <h1>Playlists</h1>
+          <ul>
+            {playlists.map((playlist) => (
+              <li key={playlist.id}>
+                <p href={playlist}>{playlist}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
-      {!loggedIn ? (
-        <a href="#" onClick={handleLogin}>
-          Login to Spotify
-        </a>
-      ) : (
-        <a href="#" onClick={handleLogout}>
-          Logout
-        </a>
+
+      {selectedOption === "tracks" && (
+        <div>
+          <h1>Tracks</h1>
+          <ul>
+            {tracks.map((track) => (
+              <li key={track.id}>
+                <p href={track}>{track}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
-      {loggedIn && playlists.length > 0 && (
-        <ul>
-          {playlists.map((playlist) => (
-            <li key={playlist}>{playlist}</li>
-          ))}
-        </ul>
+      {selectedOption === "profile" && (
+        <div>
+          <h1>Profile</h1>
+          <ul>
+            <li style={{ display: "flex", alignItems: "center" }}>
+              <img
+                src={profile.images[0].url}
+                alt="profile"
+                style={{ width: "50px", height: "50px", marginRight: "10px" }}
+              />
+              <p>{profile.display_name}</p>
+            </li>
+            <li>
+              <p>{profile.email}</p>
+            </li>
+            <li>
+              <p>{profile.country}</p>
+            </li>
+          </ul>
+        </div>
       )}
-    </div>
+      {selectedOption === null && (
+        <div>
+          <h1>Welcome to the app!</h1>
+        </div>
+      )}
+      {!loggedIn && (
+        <div>
+          <h2>Please login to use the app.</h2>
+        </div>
+      )}
+    </>
   );
 };
 
