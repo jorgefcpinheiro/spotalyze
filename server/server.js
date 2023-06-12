@@ -147,6 +147,28 @@ app.get("/profile", async (req, res) => {
   }
 });
 
+app.get("/recommendations", async (req, res) => {
+  try {
+    const topTracks = await spotifyApi.getMyTopTracks({
+      limit: 5,
+      time_range: "long_term",
+    });
+    const topTracksIds = topTracks.body.items.map((track) => track.id);
+    const recommendations = await spotifyApi.getRecommendations({
+      seed_tracks: topTracksIds,
+    });
+    const recommendationsData = recommendations.body.tracks.map((track) => ({
+      name: track.name,
+      artist: track.artists[0].name,
+    }));
+    res.json(recommendationsData);
+  } catch (error) {
+    console.error("Error getting recommendations:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 app.listen(8888, () =>
   console.log(
     "HTTP Server up. Now go to http://localhost:8888/login in your browser."
