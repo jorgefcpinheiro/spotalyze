@@ -114,7 +114,7 @@ app.get("/tracks", async (req, res) => {
   try {
     const topTracks = await spotifyApi.getMyTopTracks({
       limit: 5,
-      time_range: "medium_term",
+      time_range: "long_term",
     });
     const topTracksNames = topTracks.body.items.map((track) => track.name);
     res.json(topTracksNames);
