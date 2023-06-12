@@ -6,6 +6,7 @@ const App = () => {
   const [tracks, setTracks] = useState([]);
   const [profile, setProfile] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
     async function checkToken() {
@@ -39,10 +40,17 @@ const App = () => {
       const data = await response.json();
       setTracks(data);
     };
+    const fetchRecommendations = async () => {
+      const response = await fetch("/recommendations");
+      const data = await response.json();
+      setRecommendations(data);
+    };
     if (selectedOption === "playlists") {
       fetchPlaylists();
     } else if (selectedOption === "tracks") {
       fetchTracks();
+    } else if (selectedOption === "recommendations") {
+      fetchRecommendations();
     }
   }, [selectedOption]);
 
@@ -114,6 +122,11 @@ const App = () => {
                 </button>
               </li>
               <li>
+                <button onClick={() => handleOptionSelect("recommendations")}>
+                  Recommendations
+                </button>
+              </li>
+              <li>
                 <button onClick={handleLogout}>Logout</button>
               </li>
             </>
@@ -171,11 +184,27 @@ const App = () => {
           </ul>
         </div>
       )}
+      {selectedOption === "recommendations" && (
+        <div>
+          <h1>Recommendations</h1>
+          <ul>
+            {recommendations.map((recommendation) => (
+              <li key={recommendation.id}>
+                <p>
+                  {recommendation.name} by {recommendation.artist}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {selectedOption === null && (
         <div>
           <h1>Welcome to the app!</h1>
         </div>
       )}
+
       {!loggedIn && (
         <div>
           <h2>Please login to use the app.</h2>
