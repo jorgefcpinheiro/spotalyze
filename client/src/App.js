@@ -4,6 +4,7 @@ const App = () => {
   const [loggedIn, setLoggedIn] = useState(null);
   const [playlists, setPlaylists] = useState([]);
   const [tracks, setTracks] = useState([]);
+  const [artists, setArtists] = useState([]);
   const [profile, setProfile] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
@@ -35,6 +36,11 @@ const App = () => {
       const data = await response.json();
       setPlaylists(data);
     };
+    const fetchArtists = async () => {
+      const response = await fetch("/artists");
+      const data = await response.json();
+      setArtists(data);
+    };
     const fetchTracks = async () => {
       const response = await fetch("/tracks");
       const data = await response.json();
@@ -51,6 +57,8 @@ const App = () => {
       fetchTracks();
     } else if (selectedOption === "recommendations") {
       fetchRecommendations();
+    } else if (selectedOption === "artists") {
+      fetchArtists();
     }
   }, [selectedOption]);
 
@@ -117,6 +125,11 @@ const App = () => {
                 </button>
               </li>
               <li>
+                <button onClick={() => handleOptionSelect("artists")}>
+                  Artists
+                </button>
+              </li>
+              <li>
                 <button onClick={() => handleOptionSelect("profile")}>
                   Profile
                 </button>
@@ -163,6 +176,19 @@ const App = () => {
           </ul>
         </div>
       )}
+      {selectedOption === "artists" && (
+        <div>
+          <h1>Artists</h1>
+          <ul>
+            {artists.map((artist) => (
+              <li key={artist.id}>
+                <p href={artist}>{artist}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {selectedOption === "profile" && (
         <div>
           <h1>Profile</h1>
