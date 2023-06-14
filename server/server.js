@@ -1,7 +1,7 @@
 const SpotifyWebApi = require("spotify-web-api-node");
 const express = require("express");
 require("dotenv").config();
-const fs = require("fs");
+//const fs = require("fs");
 
 const scopes = [
   "ugc-image-upload",
@@ -120,6 +120,21 @@ app.get("/tracks", async (req, res) => {
     res.json(topTracksNames);
   } catch (error) {
     console.error("Error getting user's top tracks:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+//get the most listened artists
+app.get("/artists", async (req, res) => {
+  try {
+    const topArtists = await spotifyApi.getMyTopArtists({
+      limit: 5,
+      time_range: "long_term",
+    });
+    const topArtistsNames = topArtists.body.items.map((artist) => artist.name);
+    res.json(topArtistsNames);
+  } catch (error) {
+    console.error("Error getting user's top artists:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
