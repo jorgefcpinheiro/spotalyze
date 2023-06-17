@@ -1,5 +1,32 @@
 import React, { useState, useEffect } from "react";
 
+const Menu = ({ handleOptionSelect }) => {
+  return (
+    <nav>
+      <ul style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
+        <li>
+          <button onClick={() => handleOptionSelect(null)}>Home</button>
+        </li>
+        <li>
+          <button onClick={() => handleOptionSelect("playlists")}>Playlists</button>
+        </li>
+        <li>
+          <button onClick={() => handleOptionSelect("tracks")}>Tracks</button>
+        </li>
+        <li>
+          <button onClick={() => handleOptionSelect("artists")}>Artists</button>
+        </li>
+        <li>
+          <button onClick={() => handleOptionSelect("profile")}>Profile</button>
+        </li>
+        <li>
+          <button onClick={() => handleOptionSelect("recommendations")}>Recommendations</button>
+        </li>
+      </ul>
+    </nav>
+  );
+};
+
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(null);
   const [playlists, setPlaylists] = useState([]);
@@ -107,53 +134,23 @@ const App = () => {
 
   return (
     <>
-      <nav>
-        <ul>
-          <li>
-            <a href="/">Home</a>
-          </li>
-          {loggedIn && (
-            <>
-              <li>
-                <button onClick={() => handleOptionSelect("playlists")}>
-                  Playlists
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleOptionSelect("tracks")}>
-                  Tracks
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleOptionSelect("artists")}>
-                  Artists
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleOptionSelect("profile")}>
-                  Profile
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleOptionSelect("recommendations")}>
-                  Recommendations
-                </button>
-              </li>
-              <li>
-                <button onClick={handleLogout}>Logout</button>
-              </li>
-            </>
-          )}
-          {!loggedIn && (
-            <li>
-              <button onClick={handleLogin}>Login</button>
-            </li>
-          )}
-        </ul>
-      </nav>
-      {selectedOption === "playlists" && (
+      {loggedIn && <Menu handleOptionSelect={handleOptionSelect} />}
+      {!loggedIn && (
         <div>
-          <h1>Playlists</h1>
+          <h2>Please login to use the app.</h2>
+          <button onClick={handleLogin}>Login</button>
+        </div>
+      )}
+
+      {loggedIn && selectedOption === null && (
+        <div>
+          <h1>Welcome to Spotalyze!</h1>
+        </div>
+      )}
+
+      {loggedIn && selectedOption === "playlists" && (
+        <div>
+          <h1>Playlists created by you</h1>
           <ul>
             {playlists.map((playlist) => (
               <li key={playlist.id}>
@@ -164,9 +161,9 @@ const App = () => {
         </div>
       )}
 
-      {selectedOption === "tracks" && (
+      {loggedIn && selectedOption === "tracks" && (
         <div>
-          <h1>Tracks</h1>
+          <h1>Most listened tracks</h1>
           <ul>
             {tracks.map((track) => (
               <li key={track.id}>
@@ -176,9 +173,10 @@ const App = () => {
           </ul>
         </div>
       )}
-      {selectedOption === "artists" && (
+
+      {loggedIn && selectedOption === "artists" && (
         <div>
-          <h1>Artists</h1>
+          <h1>Most listened artists</h1>
           <ul>
             {artists.map((artist) => (
               <li key={artist.id}>
@@ -189,9 +187,9 @@ const App = () => {
         </div>
       )}
 
-      {selectedOption === "profile" && (
+      {loggedIn && selectedOption === "profile" && (
         <div>
-          <h1>Profile</h1>
+          <h1>Your profile</h1>
           <ul>
             <li style={{ display: "flex", alignItems: "center" }}>
               <img
@@ -210,9 +208,10 @@ const App = () => {
           </ul>
         </div>
       )}
-      {selectedOption === "recommendations" && (
+
+      {loggedIn && selectedOption === "recommendations" && (
         <div>
-          <h1>Recommendations</h1>
+          <h1>Recommendations based on your most listened songs</h1>
           <ul>
             {recommendations.map((recommendation) => (
               <li key={recommendation.id}>
@@ -225,16 +224,8 @@ const App = () => {
         </div>
       )}
 
-      {selectedOption === null && (
-        <div>
-          <h1>Welcome to the app!</h1>
-        </div>
-      )}
-
-      {!loggedIn && (
-        <div>
-          <h2>Please login to use the app.</h2>
-        </div>
+      {loggedIn && (
+        <button onClick={handleLogout}>Logout</button>
       )}
     </>
   );
